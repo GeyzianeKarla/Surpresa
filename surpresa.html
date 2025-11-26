@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💌 Surpresa Mágica Final</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ------------------ Base e Cores ------------------ */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #ffe0f0; 
+            font-family: 'Comic Neue', cursive, sans-serif; 
+            overflow: hidden; 
+            position: relative;
+        }
+
+        /* ------------------ TELAS INICIAIS ------------------ */
+        .full-screen-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ffe0f0;
+            z-index: 20;
+            transition: opacity 0.5s ease-out;
+        }
+
+        #password-screen {
+            flex-direction: column;
+            padding: 30px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            max-width: 350px;
+            text-align: center;
+        }
+
+        #password-screen h2 {
+            font-family: 'Pacifico', cursive; 
+            color: #ff69b4;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        #passwordInput {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 2px solid #ff69b4;
+            border-radius: 8px;
+            width: 90%;
+            font-size: 1em;
+            text-align: center;
+        }
+
+        .action-button {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            background-color: #ff69b4; 
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .action-button:hover {
+            background-color: #e05c9f;
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+            font-size: 0.9em;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* ------------------ Área de Animação ------------------ */
+        .content-area {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: none; 
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #startButton {
+            z-index: 10;
+        }
+
+        #animationContainer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .anim-element {
+            position: absolute;
+            max-width: 250px;
+            height: auto;
+            opacity: 0;
+            transition: opacity 0.5s ease-out, transform 0.8s ease-out;
+        }
+        
+        #cardMagic {
+            z-index: 10;
+            transform: scale(0.5); 
+        }
+        
+        #cardOpenPeeking, #chickenFinalPose {
+            display: none;
+        }
+
+        #chickenFinalPose {
+            /* Franguinho no centro, mais para baixo */
+            position: absolute;
+            top: 65%; /* Ajustado para ir um pouco mais para baixo */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 200px; /* Tamanho do franguinho */
+            z-index: 15; /* Para ficar acima do fundo, mas abaixo da mensagem */
+        }
+
+        /* Animação para o pulo */
+        .is-jumping {
+            animation: jump 0.8s ease-out;
+        }
+        
+        @keyframes jump {
+            0% { transform: translate(-50%, -50%) scale(1); } /* Começa na posição final, mas pode ser ajustado se necessário */
+            50% { transform: translate(-50%, -150%) scale(1.1); } /* Salta para cima */
+            100% { transform: translate(-50%, -50%) scale(1); } /* Pousa na posição final */
+        }
+
+        /* Animação de Brilho */
+        .sparkle-effect {
+            filter: drop-shadow(0 0 15px rgba(255, 105, 180, 0.8)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+            animation: pulseGlow 1.5s infinite alternate;
+        }
+        
+        @keyframes pulseGlow {
+            0% { opacity: 0.9; }
+            100% { opacity: 1; }
+        }
+
+        /* ------------------ Balão de Mensagem ------------------ */
+        #message-bubble {
+            background-color: white;
+            padding: 20px 25px;
+            border-radius: 20px; 
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 300px;
+            position: absolute;
+            top: 35%; /* Ajustado para ficar mais acima do franguinho */
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            z-index: 20; /* Para ficar acima do franguinho */
+        }
+
+        #message-bubble.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        #message-bubble h2 {
+            font-family: 'Pacifico', cursive; 
+            color: #ff69b4;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        #message-bubble p {
+            font-family: 'Comic Neue', cursive; 
+            font-size: 1.3em; 
+            color: #555;
+            line-height: 1.4;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="full-screen-container" id="password-screen-wrapper">
+        <div id="password-screen">
+            <h2>🔐 Desbloqueie a Surpresa</h2>
+            <p>Qual é o meu apelido de infância?</p>
+            <input type="text" id="passwordInput" placeholder="Digite a resposta aqui...">
+            <button class="action-button" onclick="checkPassword()">Verificar</button>
+            <p class="error-message" id="errorMessage">Resposta incorreta. Tente novamente!</p>
+        </div>
+    </div>
+    
+    <div class="content-area" id="mainContent">
+        
+        <button class="action-button" id="startButton">Iniciar Animação Mágica</button>
+
+        <div id="animationContainer">
+            <img id="cardMagic" class="anim-element" src="img/envelope-closed-magic.png" alt="Carta Mágica Fechada com Brilho">
+
+            <img id="cardOpenPeeking" class="anim-element" src="img/chicken-peeking-open.png" alt="Franguinho Espiando da Carta">
+
+            <img id="chickenFinalPose" class="anim-element" src="img/chicken-final-pose.png" alt="Franguinho Apaixonado">
+        </div>
+        
+        <div id="message-bubble">
+            <h2>🎉 Surpresa! 🎉</h2>
+            <p>Te amo meu franguinho gostoso 😋❤️</p>
+        </div>
+    </div>
+
+
+    <script>
+        const CORRECT_PASSWORD = "kikita"; 
+        const passwordInput = document.getElementById('passwordInput');
+        const passwordScreenWrapper = document.getElementById('password-screen-wrapper');
+        const mainContent = document.getElementById('mainContent');
+        const errorMessage = document.getElementById('errorMessage');
+
+        const startButton = document.getElementById('startButton');
+        const animationContainer = document.getElementById('animationContainer');
+        const cardMagic = document.getElementById('cardMagic');
+        const cardOpenPeeking = document.getElementById('cardOpenPeeking');
+        const chickenFinalPose = document.getElementById('chickenFinalPose');
+        const messageBubble = document.getElementById('message-bubble'); 
+
+        let currentImageElement = null;
+
+        function checkPassword() {
+            const enteredPassword = passwordInput.value.toLowerCase().trim(); 
+            
+            if (enteredPassword === CORRECT_PASSWORD) {
+                passwordScreenWrapper.style.opacity = '0';
+                setTimeout(() => {
+                    passwordScreenWrapper.style.display = 'none';
+                    mainContent.style.display = 'flex'; 
+                }, 500); 
+            } else {
+                errorMessage.style.opacity = '1';
+                passwordInput.value = ''; 
+                setTimeout(() => {
+                    errorMessage.style.opacity = '0';
+                }, 2000);
+            }
+        }
+
+        // --- Funções de Animação ---
+
+        function hideSpecificElement(element) {
+             if (element) {
+                element.style.opacity = '0';
+                element.style.transform = 'scale(0.5)';
+                element.classList.remove('is-jumping'); 
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 500);
+            }
+        }
+
+
+        function showElement(element, callback, delay = 0) {
+            setTimeout(() => {
+                // Esconde apenas os elementos que NÃO queremos que fiquem no final (carta e frango espreitando)
+                if (currentImageElement && currentImageElement !== chickenFinalPose) {
+                    hideSpecificElement(currentImageElement);
+                }
+                
+                currentImageElement = element;
+                element.style.display = 'block';
+                
+                void element.offsetWidth; 
+                
+                element.style.opacity = '1';
+                element.style.transform = 'scale(1)';
+                
+                if (callback) {
+                    setTimeout(callback, 800); 
+                }
+            }, delay);
+        }
+
+        function startMagicSequence() {
+            startButton.style.display = 'none';
+            animationContainer.style.display = 'flex';
+            
+            // 1. FASE 1: Carta Aparece com Brilho (Zoom)
+            showElement(cardMagic, () => {
+                cardMagic.classList.add('sparkle-effect');
+                
+                // 2. FASE 2: Franguinho Espreita da Carta (Abre a carta)
+                showElement(cardOpenPeeking, () => {
+                    
+                    // 3. FASE 3: Franguinho Pula para o Centro e Mensagem Aparece
+                    showElement(chickenFinalPose, () => {
+                        
+                        // Garante que a carta espiando desapareça ANTES do frango pular e ficar
+                        hideSpecificElement(cardOpenPeeking); 
+                        
+                        // Executa a animação de pulo
+                        chickenFinalPose.classList.add('is-jumping');
+                        
+                        // Mostra a mensagem logo após o pouso do frango (0.8s = duração do pulo)
+                        setTimeout(() => {
+                            messageBubble.classList.add('show');
+                        }, 800); 
+                        
+                    }, 1000); // Tempo na fase 2
+                    
+                }, 1500); // Tempo na fase 1
+                
+            }, 50); // Inicia
+        }
+
+
+        // --- Event Listeners ---
+
+        startButton.addEventListener('click', () => {
+            const confirmOpen = confirm("Você tem certeza que quer ver? Clique em OK para 'SIM' 😉");
+
+            if (confirmOpen) {
+                startMagicSequence();
+            } else {
+                window.location.replace("about:blank"); 
+            }
+        });
+
+        passwordInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+        
+    </script>
+</body>
+</html>
