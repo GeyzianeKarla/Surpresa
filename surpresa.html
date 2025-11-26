@@ -265,15 +265,13 @@
 
         // --- Funções de Animação ---
 
-        function hideCurrentImage() {
-             if (currentImageElement) {
-                currentImageElement.style.opacity = '0';
-                currentImageElement.style.transform = 'scale(0.5)';
-                // Remove a classe de pulo para que o elemento volte ao estado inicial
-                currentImageElement.classList.remove('is-jumping'); 
-                // Esconde o elemento após a transição
+        function hideSpecificElement(element) {
+             if (element) {
+                element.style.opacity = '0';
+                element.style.transform = 'scale(0.5)';
+                element.classList.remove('is-jumping'); 
                 setTimeout(() => {
-                    currentImageElement.style.display = 'none';
+                    element.style.display = 'none';
                 }, 500);
             }
         }
@@ -281,21 +279,21 @@
 
         function showElement(element, callback, delay = 0) {
             setTimeout(() => {
-                hideCurrentImage(); // Esconde o elemento anterior
+                // Esconde apenas os elementos que NÃO queremos que fiquem no final (carta e frango espreitando)
+                if (currentImageElement && currentImageElement !== chickenFinalPose) {
+                    hideSpecificElement(currentImageElement);
+                }
                 
-                // Configura o novo elemento
                 currentImageElement = element;
                 element.style.display = 'block';
                 
-                // Força o reflow
                 void element.offsetWidth; 
                 
-                // Mostra com transição (zoom/opacidade)
                 element.style.opacity = '1';
                 element.style.transform = 'scale(1)';
                 
                 if (callback) {
-                    setTimeout(callback, 800); // Espera a transição de entrada terminar
+                    setTimeout(callback, 800); 
                 }
             }, delay);
         }
@@ -313,6 +311,9 @@
                     
                     // 3. FASE 3: Franguinho Pula para o Centro e Mensagem Aparece
                     showElement(chickenFinalPose, () => {
+                        
+                        // Garante que a carta espiando desapareça ANTES do frango pular e ficar
+                        hideSpecificElement(cardOpenPeeking); 
                         
                         // Executa a animação de pulo
                         chickenFinalPose.classList.add('is-jumping');
